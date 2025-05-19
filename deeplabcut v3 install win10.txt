@@ -1,0 +1,50 @@
+win10: Cuda=12.8
+
+conda config --add channels conda-forge
+
+conda create -n DLCv3-WebUI python=3.10
+
+conda activate DLCv3-WebUI
+
+conda install cudatoolkit=11.8.0
+
+conda install -c conda-forge pytables==3.8.0
+
+ conda install git
+
+pip3 install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu118
+
+pip install git+https://github.com/DeepLabCut/DeepLabCut.git@pytorch_dlc#egg=deeplabcut[gui,modelzoo,wandb]
+
+python -m deeplabcut 不能运行
+
+pip uninstall numpy
+
+pip install git+https://github.com/DeepLabCut/DeepLabCut.git@pytorch_dlc#egg=deeplabcut[gui,modelzoo,wandb]
+
+python -m deeplabcut 成功运行
+
+
+
+
+ubuntu：
+
+conda config --add channels conda-forge
+
+conda create -n DLCv3-WebUI python=3.10
+
+conda activate DLCv3-WebUI
+
+conda install nvidia/label/cuda-12.4.1::cuda-toolkit
+
+pip3 install torch torchvision torchaudio
+
+conda install -c conda-forge pytables==3.8.0
+
+pip uninstall numpy
+
+pip install git+https://github.com/DeepLabCut/DeepLabCut.git@pytorch_dlc#egg=deeplabcut[gui,modelzoo,wandb]
+
+python -c "import deeplabcut" #检查无报错
+
+pip install streamlit GPUtil streamlit-authenticator ffmpeg

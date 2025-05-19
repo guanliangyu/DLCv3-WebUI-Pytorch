@@ -1,0 +1,35 @@
+credentials:
+  usernames:
+    guanly:
+      email: guanly@szbl.ac.cn
+      name: Liangyu Guan
+      password: guan
+    yangyh:
+      email: yangyh@szbl.ac.cn
+      name: Yanhong Yang
+      password: yang
+    zhouyl:
+      email: zhouyl@szbl.ac.cn
+      name: Yulong Zhou
+      password: zhou
+    luoxj:
+      email: luoxj@szbl.ac.cn
+      name: luoxj
+      password: luo
+    liyj:
+      email: liyj@szbl.ac.cn
+      name: liyj
+      password: li
+    taozhiyin:
+      email: taozhiyin@szbl.ac.cn
+      name: taozhiyin
+      password: tao
+      
+cookie:
+  expiry_days: 30
+  key: "dlc_webui_key_123"
+  name: "dlc_webui_cookie_123"
+preauthorized:
+  emails:
+  - guanly@szbl.ac.cn
+  
