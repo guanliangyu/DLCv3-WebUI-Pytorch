@@ -303,7 +303,10 @@ def calculate_mouse_distance(coords: dict) -> np.ndarray:
                         )
         
         # 计算欧氏距离
-        dist = np.sqrt(np.square(mouse1_cx - mouse2_cx) + np.square(mouse1_cy - mouse2_cy))
+        dist: np.ndarray[Any, Any] = np.asarray(
+            np.sqrt(np.square(mouse1_cx - mouse2_cx) + np.square(mouse1_cy - mouse2_cy)),
+            dtype=float,
+        )
         
         # 验证计算结果
         if np.any(np.isnan(dist)):
@@ -319,7 +322,12 @@ def calculate_mouse_distance(coords: dict) -> np.ndarray:
         st.error(f"计算距离时出错: {str(e)}")
         st.error(f"错误详情: {traceback.format_exc()}")
         # 返回一个默认的距离数组
-        return np.full(len(next(iter(coords.values()))['x']), 1000.0)
+        default_dist: np.ndarray[Any, Any] = np.full(
+            len(next(iter(coords.values()))['x']),
+            1000.0,
+            dtype=float,
+        )
+        return default_dist
 
 
 def calculate_facing_angles(coords: dict) -> dict:
@@ -382,7 +390,7 @@ def calculate_angle(vector1, vector2) -> np.ndarray:
     cos_angle = np.clip(cos_angle, -1.0, 1.0)
     
     # 转换为角度
-    angles = np.degrees(np.arccos(cos_angle))
+    angles: np.ndarray[Any, Any] = np.asarray(np.degrees(np.arccos(cos_angle)), dtype=float)
     return angles
 
 

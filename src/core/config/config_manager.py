@@ -1,7 +1,6 @@
 import os
 from typing import Optional, Dict, Any, cast
 import yaml
-from yaml.loader import SafeLoader
 import streamlit as st
 import streamlit_authenticator as stauth
 
