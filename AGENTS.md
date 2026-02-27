@@ -11,7 +11,7 @@
 
 ## 构建、测试与开发命令
 - `python -m venv .venv && source .venv/bin/activate`：创建隔离环境，确保版本一致性。
-- `pip install -r requirements.txt` 安装 runtime 依赖；`pip install -e .[dev]` 提供 lint、test、type-check 工具。
+- `pip install -e .` 安装 runtime 依赖；`pip install -e .[dev]` 提供 lint、test、type-check 工具。若需快速复现维护环境，可使用 `mamba env create -f environment.DLCv3-WebUI.lock.yml`。
 - `streamlit run Home.py` 打开主界面；`streamlit run pages/<file>.py` 可聚焦某一页面调试。
 - `pytest --cov=src --cov-report=term-missing` 执行测试并显示缺失覆盖率；必要时追加 `-k pattern` 精准运行子集。
 - `black . && isort . && flake8` 自动格式化并执行静态检查；`mypy src` 确保类型签名完整。

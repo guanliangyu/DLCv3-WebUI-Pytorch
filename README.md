@@ -89,7 +89,6 @@ DLCv3-WebUI-Pytorch/
 ├── scripts/               # 安装、分析脚本与参考说明
 ├── install_dlc_env_ubuntu.sh
 ├── environment.DLCv3-WebUI.lock.yml
-├── requirements.txt
 ├── pyproject.toml
 └── logs/, data/, models/  # 运行输出（默认忽略于 Git）
 ```

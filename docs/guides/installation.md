@@ -5,7 +5,7 @@
 ### 硬件要求 / Hardware Requirements
 - CPU: 4核或以上 / 4 cores or more
 - 内存: 16GB或以上 / 16GB RAM or more
-- GPU: NVIDIA GPU with 8GB或以上显存 / NVIDIA GPU with 8GB VRAM or more
+- GPU: NVIDIA GPU with 8GB或以上显存（可选） / NVIDIA GPU with 8GB VRAM or more (optional)
 - 硬盘空间: 50GB或以上 / 50GB disk space or more
 
 ### 软件要求 / Software Requirements
@@ -13,59 +13,48 @@
   - Windows 10/11
   - Ubuntu 20.04/22.04
   - macOS 12或以上 / macOS 12 or later
-- Python 3.8或以上 / Python 3.8 or later
-- CUDA 11.0或以上 / CUDA 11.0 or later
-- cuDNN 8.0或以上 / cuDNN 8.0 or later
+- Python 3.8+（CI 同时验证 3.8 与 3.10） / Python 3.8+ (CI validates 3.8 and 3.10)
 
 ## 安装步骤 / Installation Steps
 
-### 1. 安装Python环境 / Install Python Environment
+### 1. 克隆项目 / Clone Project
 ```bash
-# 使用conda创建环境 / Create environment with conda
-conda create -n dlc-webui python=3.9
-conda activate dlc-webui
+git clone https://github.com/guanliangyu/DLCv3-WebUI-Pytorch.git
+cd DLCv3-WebUI-Pytorch
 ```
 
-### 2. 安装CUDA和cuDNN / Install CUDA and cuDNN
-- 从NVIDIA官网下载并安装CUDA / Download and install CUDA from NVIDIA website
-- 安装对应版本的cuDNN / Install corresponding cuDNN version
-
-### 3. 克隆项目 / Clone Project
+### 2. 推荐安装方式（Ubuntu） / Recommended setup (Ubuntu)
 ```bash
-git clone https://github.com/yourusername/DLC-WebUI.git
-cd DLC-WebUI
+bash install_dlc_env_ubuntu.sh DLCv3-WebUI
+conda activate DLCv3-WebUI
 ```
 
-### 4. 安装依赖 / Install Dependencies
+### 3. 锁定环境重建（可选） / Rebuild from lock file (optional)
 ```bash
-# 使用pip安装依赖 / Install dependencies with pip
-pip install -r requirements.txt
+mamba env create -f environment.DLCv3-WebUI.lock.yml
+conda activate DLCv3-WebUI
+```
 
-# 或使用conda安装 / Or install with conda
-conda env create -f environment.yml
+### 4. 手动安装（开发模式） / Manual install (dev mode)
+```bash
+pip install -e .
+pip install -e .[dev]
 ```
 
 ### 5. 配置设置 / Configure Settings
-1. 复制配置模板 / Copy configuration template
-```bash
-cp config/config.example.yaml config/config.yaml
-```
-
-2. 修改配置文件 / Modify configuration file
-- 设置数据目录 / Set data directory
-- 配置GPU设置 / Configure GPU settings
-- 设置用户认证 / Set up user authentication
+- 编辑 `src/core/config/config.yaml`，配置认证信息、数据路径和模型路径。
+- 生产环境建议使用环境变量或本地忽略文件存放敏感信息。
 
 ## 验证安装 / Verify Installation
 
 ### 1. 运行测试 / Run Tests
 ```bash
-pytest tests/
+pytest --cov=src --cov-report=term-missing --cov-fail-under=1
 ```
 
 ### 2. 启动应用 / Start Application
 ```bash
-python app.py
+streamlit run Home.py
 ```
 
 ### 3. 访问Web界面 / Access Web Interface
@@ -74,23 +63,13 @@ python app.py
 ## 常见问题 / Common Issues
 
 ### 1. CUDA相关问题 / CUDA Related Issues
-- 确保CUDA版本与PyTorch兼容 / Ensure CUDA version is compatible with PyTorch
-- 检查环境变量设置 / Check environment variables
+- 确保 CUDA 与驱动版本匹配 / Ensure CUDA and driver versions are compatible
+- GPU 不可用时可走 CPU 流程 / CPU fallback is supported when GPU is unavailable
 
 ### 2. 依赖安装问题 / Dependency Installation Issues
-- 使用清华镜像源加速下载 / Use Tsinghua mirror for faster download
-- 检查Python版本兼容性 / Check Python version compatibility
+- 优先使用 `install_dlc_env_ubuntu.sh` 或锁定文件重建环境。
+- 检查 Python 版本与依赖兼容性 / Check Python-version compatibility.
 
 ### 3. 运行时错误 / Runtime Errors
-- 检查GPU驱动版本 / Check GPU driver version
-- 验证文件权限设置 / Verify file permissions
-
-## 更新说明 / Update Notes
-
-### 版本更新 / Version Updates
-- 定期检查新版本 / Check for new versions regularly
-- 按照更新日志进行升级 / Follow changelog for upgrades
-
-### 数据备份 / Data Backup
-- 更新前备份数据 / Backup data before updates
-- 保存自定义配置 / Save custom configurations 
+- 检查 `logs/` 中的应用日志 / Check app logs under `logs/`
+- 验证目录权限与路径配置 / Verify path settings and permissions
