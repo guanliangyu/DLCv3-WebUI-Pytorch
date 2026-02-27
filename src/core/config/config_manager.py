@@ -55,7 +55,7 @@ def load_config(file_path: str) -> Optional[Dict[str, Any]]:
 
 
 def initialize_authenticator(
-    config: Optional[Dict[str, Any]]
+    config: Optional[Dict[str, Any]],
 ) -> Optional[stauth.Authenticate]:
     """初始化认证器
 
