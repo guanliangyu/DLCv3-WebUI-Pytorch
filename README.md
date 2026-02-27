@@ -11,6 +11,7 @@
 - [配置与数据 / Configuration & Data](#配置与数据--configuration--data)
 - [开发流程 / Development Workflow](#开发流程--development-workflow)
 - [测试与质量 / Testing & Quality](#测试与质量--testing--quality)
+- [CI 持续集成 / Continuous Integration](#ci-持续集成--continuous-integration)
 - [文档与脚本 / Docs & Scripts](#文档与脚本--docs--scripts)
 - [贡献指南 / Contributing](#贡献指南--contributing)
 - [许可证 / License](#许可证--license)
@@ -33,10 +34,16 @@
    conda activate DLCv3-WebUI
    ```
    脚本会创建 Conda + mamba 环境并安装运行所需依赖，如需开发工具可追加 `pip install -e .[dev]`。
-3. **配置认证与路径 / Configure auth & paths**
+3. **锁定环境快速重建（可选） / Rebuild from lock file (optional)**
+   ```bash
+   mamba env create -f environment.DLCv3-WebUI.lock.yml
+   conda activate DLCv3-WebUI
+   ```
+   若需要与当前维护环境尽可能一致，优先使用该锁定文件。
+4. **配置认证与路径 / Configure auth & paths**
    - 复制 `src/core/config/config.yaml` 并填入用户名、密码哈希和数据目录。
    - 设置 `data/`、`models/`、`logs/` 至本地大容量磁盘，避免提交到 Git。
-4. **运行应用 / Run the app**
+5. **运行应用 / Run the app**
    ```bash
    streamlit run Home.py
    ```
@@ -81,6 +88,7 @@ DLCv3-WebUI-Pytorch/
 ├── docs/                  # 安装与快速开始文档
 ├── scripts/               # 安装、分析脚本与参考说明
 ├── install_dlc_env_ubuntu.sh
+├── environment.DLCv3-WebUI.lock.yml
 ├── requirements.txt
 ├── pyproject.toml
 └── logs/, data/, models/  # 运行输出（默认忽略于 Git）
@@ -99,15 +107,23 @@ DLCv3-WebUI-Pytorch/
 - 重要实验配置、Benchmark 与失败案例建议记录在 PR 讨论或 `docs/` 对应章节。
 
 ## 测试与质量 / Testing & Quality
-- 单测使用 Pytest：`pytest --cov=src --cov-report=term-missing`
+- 单测使用 Pytest：`pytest --cov=src --cov-report=term-missing --cov-fail-under=1`
 - 静态检查与格式化：`black . && isort . && flake8`
 - 类型检查：`mypy src`
 - CPU-only 环境需全部通过以上命令；若新增 GPU 功能，请为 CPU 场景提供 fallback 并补充说明。
 - 参考 `tests/unit/test_gpu_utils.py` 了解如何使用 fixtures 隔离硬件依赖。
 
+## CI 持续集成 / Continuous Integration
+- 工作流文件：`.github/workflows/ci.yml`
+- 触发方式：`push` 到 `main`、`pull_request` 到 `main`、手动 `workflow_dispatch`
+- Python 版本矩阵：`3.8` 与 `3.10`（测试在两个版本都执行）
+- `black/isort/flake8/mypy` 在 `3.10` 任务执行；格式化与 lint 会优先针对本次变更的 Python 文件
+- 覆盖率门禁与本地命令保持一致：`--cov-fail-under=1`
+- 开启并发取消（同一分支新提交会自动取消旧任务），减少无效占用
+
 ## 文档与脚本 / Docs & Scripts
 - 入门文档与补充指南：`docs/README.md`、`docs/guides/installation.md`、`docs/guides/quickstart.md`
-- 部署与环境脚本：`install_dlc_env_ubuntu.sh`、`scripts/deeplabcut v3 install *.txt`
+- 部署与环境脚本：`install_dlc_env_ubuntu.sh`、`environment.DLCv3-WebUI.lock.yml`、`scripts/deeplabcut v3 install *.txt`
 - 分析辅助脚本：`scripts/analyze_references.py`、`archive/` 下存有历史实现，可用作参考但不建议直接复用。
 
 ## 贡献指南 / Contributing

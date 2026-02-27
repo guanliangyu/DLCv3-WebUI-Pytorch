@@ -13,11 +13,16 @@
   bash install_dlc_env_ubuntu.sh DLCv3-WebUI
   conda activate DLCv3-WebUI
   ```
+- 如需快速复现维护中的锁定环境，可使用：
+  ```bash
+  mamba env create -f environment.DLCv3-WebUI.lock.yml
+  conda activate DLCv3-WebUI
+  ```
 - 安装开发工具链：
   ```bash
   pip install -e .[dev]
   ```
-- 所有命令默认在 Python 3.8+ 环境执行，确保与 CI 一致。
+- CI 运行 Python `3.8` + `3.10` 测试矩阵；本地开发建议优先使用 Python `3.10`。
 
 ## 项目结构 / Project Layout
 ```
@@ -38,6 +43,7 @@ DLCv3-WebUI-Pytorch/
 ├── docs/                    # 文档与指南
 ├── scripts/                 # 安装或分析脚本
 ├── install_dlc_env_ubuntu.sh
+├── environment.DLCv3-WebUI.lock.yml
 ├── requirements.txt
 └── pyproject.toml
 ```
@@ -53,7 +59,7 @@ DLCv3-WebUI-Pytorch/
 ## 测试与验证 / Testing & Verification
 在提交或创建 PR 前务必运行：
 ```bash
-pytest --cov=src --cov-report=term-missing
+pytest --cov=src --cov-report=term-missing --cov-fail-under=1
 black .
 isort .
 flake8
@@ -61,6 +67,13 @@ mypy src
 ```
 - 针对 GPU 相关改动，确保 CPU-only 环境仍能正常执行（提供 fallback）。
 - 新增功能需附带相应单测或说明缺失原因；可参考 `tests/unit/test_gpu_utils.py` 构建硬件隔离的测试。
+
+## CI 规则 / CI Rules
+- 工作流文件：`.github/workflows/ci.yml`
+- 触发方式：`push` 到 `main`、`pull_request` 到 `main`、手动 `workflow_dispatch`
+- Python 测试矩阵：`3.8` 与 `3.10`
+- `black/isort/flake8/mypy` 仅在 `3.10` 任务执行，测试在两个版本都执行
+- 覆盖率门禁：`pytest ... --cov-fail-under=1`
 
 ## Git 工作流 / Git Workflow
 - **分支命名 / Branch naming**：`feature/<short-description>`、`fix/<issue-id>` 等，保持可读。

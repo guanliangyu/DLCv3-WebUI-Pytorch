@@ -5,10 +5,19 @@ on:
     branches: [ main ]
   pull_request:
     branches: [ main ]
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   quality:
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.8", "3.10"]
 
     steps:
       - name: Checkout repository
@@ -19,68 +28,83 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: "3.10"
+          python-version: ${{ matrix.python-version }}
           cache: "pip"
+          cache-dependency-path: "pyproject.toml"
 
       - name: Install system dependencies
         run: |
           sudo apt-get update
           sudo apt-get install -y ffmpeg libsm6 libxext6
 
-      - name: Install project dependencies
+      - name: Install CI dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install -e .[dev]
+          pip install -e . --no-deps
+          pip install black isort flake8 mypy pytest pytest-cov streamlit GPUtil
 
       - name: Determine Python files to check
+        if: matrix.python-version == '3.10'
         id: pyfiles
         run: |
           if [ "${{ github.event_name }}" = "pull_request" ]; then
-            git fetch origin ${{ github.base_ref }} --depth=1
+            git fetch origin "${{ github.base_ref }}" --depth=1
             BASE="origin/${{ github.base_ref }}"
-            RANGE="$BASE...HEAD"
+            RANGE="$BASE...${{ github.sha }}"
           else
-            if git rev-parse HEAD~1 >/dev/null 2>&1; then
-              RANGE="HEAD~1...HEAD"
+            BEFORE="${{ github.event.before }}"
+            if [ -n "$BEFORE" ] && [ "$BEFORE" != "0000000000000000000000000000000000000000" ]; then
+              RANGE="$BEFORE...${{ github.sha }}"
             else
               RANGE="HEAD"
             fi
           fi
 
-          if [ "$RANGE" = "HEAD" ]; then
-            CHANGED=$(git ls-files '*.py')
-          else
-            CHANGED=$(git diff --name-only "$RANGE" -- '*.py')
-          fi
-
-          echo "Changed python files:\n$CHANGED"
+          echo "Diff range: $RANGE"
 
           TMP_LIST=$(mktemp)
-          printf '%s\n' "$CHANGED" | sed '/^$/d' | sed '/^__init__\.py$/d' > "$TMP_LIST"
+          if [ "$RANGE" = "HEAD" ]; then
+            git ls-files '*.py' > "$TMP_LIST"
+          else
+            git diff --name-only --diff-filter=ACMR "$RANGE" -- '*.py' > "$TMP_LIST"
+          fi
+
+          sed -i '/^$/d' "$TMP_LIST"
+          sort -u "$TMP_LIST" -o "$TMP_LIST"
+
+          echo "Changed Python files:"
+          cat "$TMP_LIST" || true
 
           if [ ! -s "$TMP_LIST" ]; then
             echo "files=" >> "$GITHUB_OUTPUT"
           else
-            PY_FILES=$(paste -sd' ' "$TMP_LIST")
-            echo "files=$PY_FILES" >> "$GITHUB_OUTPUT"
+            {
+              echo "files<<EOF"
+              cat "$TMP_LIST"
+              echo "EOF"
+            } >> "$GITHUB_OUTPUT"
           fi
 
           rm -f "$TMP_LIST"
 
       - name: Verify formatting
-        if: steps.pyfiles.outputs.files != ''
+        if: matrix.python-version == '3.10' && steps.pyfiles.outputs.files != ''
         run: |
-          black --check ${{ steps.pyfiles.outputs.files }}
-          isort ${{ steps.pyfiles.outputs.files }} --check-only
+          mapfile -t py_files <<< "${{ steps.pyfiles.outputs.files }}"
+          black --check "${py_files[@]}"
+          isort --check-only "${py_files[@]}"
 
       - name: Lint with flake8
-        if: steps.pyfiles.outputs.files != ''
-        run: flake8 ${{ steps.pyfiles.outputs.files }}
+        if: matrix.python-version == '3.10' && steps.pyfiles.outputs.files != ''
+        run: |
+          mapfile -t py_files <<< "${{ steps.pyfiles.outputs.files }}"
+          flake8 "${py_files[@]}"
 
       - name: Type check with mypy
+        if: matrix.python-version == '3.10'
         run: mypy src
 
       - name: Run tests
         env:
           PYTHONPATH: src
-        run: pytest --cov=src --cov-report=term-missing
+        run: pytest --cov=src --cov-report=term-missing --cov-fail-under=1
