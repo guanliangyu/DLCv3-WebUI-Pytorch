@@ -1,8 +1,9 @@
 import os
-from typing import Optional, Dict, Any, cast
-import yaml
+from typing import Any, Dict, Optional, cast
+
 import streamlit as st
 import streamlit_authenticator as stauth
+import yaml
 
 
 def get_root_path() -> str:
